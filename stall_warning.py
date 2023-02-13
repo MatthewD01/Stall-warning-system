@@ -1,42 +1,51 @@
-import xpc 
-from time import sleep
-from time import monotonic
+import xpc
+import time
+import csv
+import pandas
 
 class XPlane:
+
     def __init__(self):
         self.client = xpc.XPlaneConnect()
+            
 
-    def connect(self):
-        print("Estabilishing connection with XPlane")
-        print("Setting up connection")
+    def getData(self):
 
-        try:
-            self.client.getDREF("sim/test/float")
-        except:
-            print("There was a problem establishing a connection with client")
-            print("Exiting")
-            return
-
-    # Function for Getting angle of attack and processing 
-    def process_attack_angle(AoA : float):
-        AoA_slope = AoA(-1) - AoA(-2) 
+        data_refs = {
+            "AoA" : [],
+            "Pitch" : [],
+            "Flight path" : [], 
+            "Time" : []
+        }
         
-    # Function for stick shaker
+        
+        AoA = self.client.getDREF("sim/flightmodel2/misc/AoA_angle_degrees")
+        pitch = self.client.getDREF("sim/flightmodel/position/theta")
+        flight_path = self.client.getDREF("sim/flightmodel/position/")
+        time = self.client.getDREF("sim/cockpit2/clock_timer/elapsed_time_seconds")
+            
+        data_refs["AoA"].append(AoA)
+        data_refs["Flight path"].append(pitch)
+        data_refs["Pitch"].append(flight_path)
+        data_refs["Time"].append(time)
+        print(data_refs)
+        
+    def writeData(data_refs):
+        df = open("datarefs.txt", "a")
+        writing = csv.DictWriter(file, data_refs.keys())
+        writing.writeheader()
+        writing.writerow(data_refs)
+        
     
-    # Function for audio warning
-
-    # Function for 
-
-
-
-
 if __name__ == "__main__":
-    client = XPlane()
-    client.connect()
-    state = True 
-    AoA = []
-    while state == True:
-        AoA.append(client.client.getDREF("alpha")) # make as an array so I can get the previous value -> create a slope value 
-        client.process_attack_angle(AoA)
+        client = XPlane()
+        while True:
+            try:
+                all_data = client.getData()
+                time.sleep(0.5)
+            except TimeoutError:
+                print("Connection stopped")
+        
+    # client.writeData(all_data)
 
 
