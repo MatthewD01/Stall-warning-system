@@ -1,7 +1,8 @@
 import xpc
 import time
 import csv
-import pandas
+from itertools import zip_longest
+
 
 class XPlane:
 
@@ -31,10 +32,12 @@ class XPlane:
         print(data_refs)
         
     def writeData(data_refs):
-        df = open("datarefs.txt", "a")
-        writing = csv.DictWriter(file, data_refs.keys())
-        writing.writeheader()
-        writing.writerow(data_refs)
+        with open('data.csv', 'w', newline='') as file:
+        
+          writer = csv.writer(file)
+          writer.writerow(data_refs.keys())
+          rows = list(zip_longest(*data_refs.values()))
+          writer.writerows(rows)
         
     
 if __name__ == "__main__":
@@ -46,6 +49,8 @@ if __name__ == "__main__":
             except TimeoutError:
                 print("Connection stopped")
         
-    # client.writeData(all_data)
+        # client.writeData(all_data)
+        
+    
 
 
