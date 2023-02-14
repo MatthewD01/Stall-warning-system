@@ -1,42 +1,59 @@
-import xpc 
-from time import sleep
-from time import monotonic
+import xpc
+import time
+import csv
+from itertools import zip_longest
+
 
 class XPlane:
+
     def __init__(self):
         self.client = xpc.XPlaneConnect()
+            
 
-    def connect(self):
-        print("Estabilishing connection with XPlane")
-        print("Setting up connection")
+    def getData(self):
 
-        try:
-            self.client.getDREF("sim/test/float")
-        except:
-            print("There was a problem establishing a connection with client")
-            print("Exiting")
-            return
-
-    # Function for Getting angle of attack and processing 
-    def process_attack_angle(AoA : float):
-        AoA_slope = AoA(-1) - AoA(-2) 
+        data_refs = {
+            "AoA" : [],
+            "Pitch" : [],
+            "Flight path" : [], 
+            "Velocity" : [],
+            "Time" : []
+        }
         
-    # Function for stick shaker
+        
+        AoA = self.client.getDREF("sim/flightmodel2/misc/AoA_angle_degrees")
+        pitch = self.client.getDREF("sim/flightmodel/position/theta")
+        flight_path = self.client.getDREF("sim/flightmodel/position/hpath")
+        velocity = self.client.getDREF("sim/flightmodel/forces/vz_air_on_acf")
+        time = self.client.getDREF("sim/cockpit2/clock_timer/elapsed_time_seconds")
+            
+        data_refs["AoA"].append(AoA)
+        data_refs["Flight path"].append(pitch)
+        data_refs["Pitch"].append(flight_path)
+        data_refs["Velocity"].append(velocity)
+        data_refs["Time"].append(time)
+        print(data_refs)
+        
+    def writeData(data_refs):
+        with open('data.csv', 'w', newline='') as file:
+        
+          writer = csv.writer(file)
+          writer.writerow(data_refs.keys())
+          rows = list(zip_longest(*data_refs.values()))
+          writer.writerows(rows)
+        
     
-    # Function for audio warning
-
-    # Function for 
-
-
-
-
 if __name__ == "__main__":
-    client = XPlane()
-    client.connect()
-    state = True 
-    AoA = []
-    while state == True:
-        AoA.append(client.client.getDREF("alpha")) # make as an array so I can get the previous value -> create a slope value 
-        client.process_attack_angle(AoA)
+        client = XPlane()
+        while True:
+            try:
+                all_data = client.getData()
+                time.sleep(0.5)
+            except TimeoutError:
+                print("Connection stopped")
+        
+        # client.writeData(all_data)
+        
+    
 
 
